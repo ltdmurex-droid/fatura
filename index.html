@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ApartmanYönet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --bg2: #ffffff;
+  --bg3: #eef1f8;
+  --border: #e0e5f0;
+  --border2: #c8d0e8;
+  --accent: #3b5bdb;
+  --accent2: #4c6ef5;
+  --accent-light: #eef2ff;
+  --accent-soft: #dbe4ff;
+  --text: #1a1d2e;
+  --text2: #3a3f5c;
+  --muted: #7c82a3;
+  --muted2: #b0b5cd;
+  --danger: #d63031;
+  --danger-bg: #fff5f5;
+  --danger-soft: #ffc9c9;
+  --success: #2f9e44;
+  --success-bg: #ebfbee;
+  --success-soft: #b2f2bb;
+  --shadow-xs: 0 1px 3px rgba(40,50,120,.06);
+  --shadow-sm: 0 2px 10px rgba(40,50,120,.08);
+  --shadow-md: 0 6px 24px rgba(40,50,120,.11);
+  --shadow-lg: 0 12px 48px rgba(40,50,120,.14);
+  --r: 10px;
+  --r-sm: 7px;
+  --r-lg: 14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Open Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg3);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── LOGIN ── */
+#loginScreen{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#eef2ff 0%,#f4f6fb 60%,#e8eeff 100%);
+  z-index:1000;padding:1rem;
+}
+.login-wrap{display:flex;flex-direction:column;align-items:center;gap:1.5rem;width:100%;max-width:400px;}
+.login-brand{text-align:center;}
+.login-logo-icon{
+  width:58px;height:58px;background:var(--accent);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;font-size:1.7rem;
+  margin:0 auto .9rem;box-shadow:0 8px 28px rgba(59,91,219,.32);
+}
+.login-brand h1{font-size:1.45rem;font-weight:800;color:var(--text);letter-spacing:-.4px;}
+.login-brand p{color:var(--muted);font-size:.82rem;margin-top:.15rem;}
+.login-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:18px;padding:2rem;width:100%;
+  box-shadow:var(--shadow-lg);
+  animation:slideUp .4s cubic-bezier(.22,1,.36,1);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+.login-tabs{
+  display:grid;grid-template-columns:1fr 1fr;
+  background:var(--bg3);border-radius:var(--r-sm);padding:3px;
+  margin-bottom:1.4rem;gap:2px;
+}
+.login-tabs button{
+  padding:.55rem;background:transparent;border:none;color:var(--muted);
+  cursor:pointer;border-radius:5px;font-family:'Open Sans',sans-serif;
+  font-size:.8rem;font-weight:700;transition:all .2s;
+}
+.login-tabs button.active{background:var(--bg2);color:var(--accent);box-shadow:var(--shadow-xs);}
+.field{margin-bottom:.9rem;}
+.field label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:.35rem;font-weight:700;}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  color:var(--text);padding:.65rem .85rem;border-radius:var(--r-sm);
+  font-family:'Open Sans',sans-serif;font-size:.87rem;outline:none;transition:all .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent);background:var(--bg2);
+  box-shadow:0 0 0 3px rgba(59,91,219,.12);
+}
+.field textarea{resize:vertical;min-height:70px;}
+.btn-primary{
+  width:100%;padding:.78rem;background:var(--accent);color:#fff;
+  border:none;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 4px 18px rgba(59,91,219,.35);transform:translateY(-1px);}
+.error-msg{
+  background:var(--danger-bg);border:1px solid var(--danger-soft);color:var(--danger);
+  padding:.55rem .85rem;border-radius:var(--r-sm);font-size:.78rem;
+  margin-top:.5rem;display:none;font-weight:600;
+}
+
+/* ── LAYOUT ── */
+#app{display:none;}
+.layout{display:flex;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:230px;background:var(--bg2);border-right:1px solid var(--border);
+  position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;
+  z-index:50;box-shadow:var(--shadow-sm);
+}
+.sidebar-brand{
+  padding:1.3rem 1.1rem .9rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:.7rem;
+}
+.sidebar-brand-icon{
+  width:34px;height:34px;background:var(--accent);border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;
+  flex-shrink:0;box-shadow:0 3px 10px rgba(59,91,219,.28);
+}
+.sidebar-brand-name{font-size:.9rem;font-weight:800;color:var(--text);letter-spacing:-.2px;}
+.sidebar-nav{flex:1;padding:.8rem .7rem;display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
+.nav-section-label{
+  font-size:.65rem;font-weight:800;color:var(--muted2);text-transform:uppercase;
+  letter-spacing:1.2px;padding:.75rem .6rem .3rem;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:.65rem;padding:.6rem .85rem;
+  background:transparent;border:none;color:var(--muted);cursor:pointer;
+  border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;
+  font-size:.82rem;font-weight:600;transition:all .18s;width:100%;text-align:left;
+}
+.nav-btn:hover{background:var(--bg3);color:var(--text2);}
+.nav-btn.active{background:var(--accent-light);color:var(--accent);font-weight:700;}
+.nav-icon{width:18px;text-align:center;font-size:.95rem;flex-shrink:0;opacity:.7;}
+.nav-btn.active .nav-icon{opacity:1;}
+.sidebar-footer{padding:.8rem .7rem;border-top:1px solid var(--border);}
+.user-chip{
+  display:flex;align-items:center;gap:.65rem;padding:.55rem .75rem;
+  background:var(--bg3);border-radius:var(--r-sm);margin-bottom:.5rem;
+}
+.user-avatar{
+  width:28px;height:28px;background:var(--accent-soft);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;color:var(--accent);font-weight:800;flex-shrink:0;
+}
+.user-info-name{font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-info-role{font-size:.68rem;color:var(--muted);}
+.btn-logout{
+  width:100%;padding:.5rem .75rem;background:transparent;
+  border:1.5px solid var(--border2);color:var(--muted);border-radius:var(--r-sm);
+  font-family:'Open Sans',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.4rem;
+}
+.btn-logout:hover{border-color:var(--danger-soft);color:var(--danger);background:var(--danger-bg);}
+
+/* ── MAIN ── */
+.main{margin-left:230px;flex:1;min-height:100vh;}
+.page-header{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:1.3rem 2rem;position:sticky;top:0;z-index:40;
+}
+.page-header-title{font-size:1.15rem;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.page-header-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem;}
+.content{padding:1.5rem 2rem;max-width:980px;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.4rem;}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.1rem 1.2rem;box-shadow:var(--shadow-xs);transition:all .2s;
+}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.stat-icon{width:36px;height:36px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:.7rem;}
+.stat-icon.blue{background:var(--accent-light);}
+.stat-icon.red{background:var(--danger-bg);}
+.stat-icon.green{background:var(--success-bg);}
+.stat-icon.purple{background:#f3f0ff;}
+.stat-label{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:.25rem;}
+.stat-value{font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.4px;line-height:1.2;}
+.stat-unit{font-size:.8rem;font-weight:600;color:var(--muted);margin-left:2px;}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);margin-bottom:1.4rem;overflow:hidden;}
+.card-header{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-header-left{display:flex;align-items:center;gap:.55rem;}
+.card-title{font-size:.88rem;font-weight:700;color:var(--text);}
+.card-icon{width:26px;height:26px;background:var(--accent-light);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+.card-body{padding:1.4rem;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.form-grid.four{grid-template-columns:1fr 1fr 1fr 1fr;}
+.form-grid.full{grid-template-columns:1fr;}
+.field input[type="file"]{padding:.5rem .7rem;cursor:pointer;}
+.field input[type="file"]::file-selector-button{
+  background:var(--accent-light);border:1px solid var(--accent-soft);color:var(--accent);
+  padding:.28rem .65rem;border-radius:5px;cursor:pointer;
+  font-family:'Open Sans',sans-serif;margin-right:.65rem;font-size:.75rem;font-weight:700;transition:all .2s;
+}
+.field input[type="file"]::file-selector-button:hover{background:var(--accent-soft);}
+.radio-group{display:flex;gap:.5rem;}
+.radio-btn{
+  flex:1;padding:.55rem .75rem;background:var(--bg3);border:1.5px solid var(--border);
+  color:var(--muted);border-radius:var(--r-sm);cursor:pointer;font-family:'Open Sans',sans-serif;
+  font-size:.78rem;font-weight:700;text-align:center;transition:all .2s;user-select:none;
+}
+.radio-btn.active.odendi{border-color:var(--success);color:var(--success);background:var(--success-bg);}
+.radio-btn.active.bekliyor{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+.btn-submit{
+  padding:.7rem 1.6rem;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);
+  font-family:'Open Sans',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;
+  transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;
+}
+.btn-submit:hover{background:var(--accent2);box-shadow:0 4px 14px rgba(59,91,219,.3);transform:translateY(-1px);}
+.btn-secondary{
+  padding:.65rem 1.3rem;background:var(--bg3);color:var(--text2);
+  border:1.5px solid var(--border2);border-radius:var(--r-sm);
+  font-family:'Open Sans',sans-serif;font-size:.83rem;font-weight:600;cursor:pointer;
+  transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;
+}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+
+/* ── TABLE ── */
+.filter-bar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+.filter-bar select,.filter-bar input{
+  background:var(--bg3);border:1.5px solid var(--border);color:var(--text);
+  padding:.45rem .75rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;
+  font-size:.76rem;font-weight:500;outline:none;transition:border-color .2s;
+}
+.filter-bar select:focus{border-color:var(--accent);}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--bg3);}
+th{padding:.7rem .95rem;text-align:left;font-size:.68rem;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+td{padding:.8rem .95rem;font-size:.82rem;border-bottom:1px solid var(--border);color:var(--text2);}
+tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .15s;}
+tbody tr:hover td{background:var(--accent-light);}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.22rem .65rem;border-radius:20px;font-size:.7rem;font-weight:700;}
+.badge.odendi{background:var(--success-bg);color:var(--success);border:1px solid var(--success-soft);}
+.badge.bekliyor{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-soft);}
+.fatura-btn{
+  background:var(--accent-light);border:1px solid var(--accent-soft);color:var(--accent);
+  padding:.27rem .65rem;border-radius:5px;font-size:.7rem;cursor:pointer;
+  font-weight:700;font-family:'Open Sans',sans-serif;transition:all .2s;
+}
+.fatura-btn:hover{background:var(--accent-soft);}
+.fatura-btn.no-file{opacity:.3;cursor:default;background:var(--bg3);border-color:var(--border);color:var(--muted);}
+.del-btn{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:.85rem;padding:.28rem .5rem;border-radius:5px;transition:all .2s;}
+.del-btn:hover{color:var(--danger);background:var(--danger-bg);}
+
+/* ── KAT MALİKİ ── */
+.malik-header{
+  background:linear-gradient(130deg,var(--accent) 0%,var(--accent2) 100%);
+  border-radius:var(--r-lg);padding:1.6rem 2rem;margin-bottom:1.4rem;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 8px 28px rgba(59,91,219,.22);
+}
+.malik-info h2{font-size:1.1rem;font-weight:800;color:#fff;}
+.malik-info p{color:rgba(255,255,255,.72);font-size:.81rem;margin-top:.15rem;}
+.malik-total-label{font-size:.68rem;color:rgba(255,255,255,.7);font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+.malik-total-val{font-size:1.85rem;font-weight:800;color:#fff;letter-spacing:-1px;}
+.gider-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:.9rem;}
+.gider-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--shadow-xs);transition:all .2s;animation:slideUp .3s ease;}
+.gider-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--accent-soft);}
+.gider-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.6rem;}
+.gider-type-badge{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent-soft);padding:.18rem .65rem;border-radius:20px;font-size:.68rem;font-weight:700;}
+.gider-amount{font-size:1.2rem;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.gider-desc{color:var(--muted);font-size:.81rem;margin-bottom:.7rem;}
+.gider-card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.7rem;border-top:1px solid var(--border);}
+.gider-date{font-size:.71rem;color:var(--muted);font-weight:600;}
+
+/* ── RAPOR ── */
+.rapor-filter-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.4rem;}
+.rapor-filter-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1.1rem;box-shadow:var(--shadow-xs);}
+.rapor-filter-card label{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:.35rem;}
+.rapor-filter-card select{width:100%;background:var(--bg3);border:1.5px solid var(--border);color:var(--text);padding:.58rem .8rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.87rem;outline:none;}
+.rapor-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-bottom:1.4rem;}
+.rapor-sum-item{background:var(--bg3);border-radius:var(--r-sm);padding:.9rem 1.1rem;text-align:center;border:1px solid var(--border);}
+.rapor-sum-item label{font-size:.66rem;color:var(--muted);display:block;margin-bottom:.25rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+.rapor-sum-item span{font-size:1.15rem;font-weight:800;color:var(--text);}
+.rapor-actions{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.4rem;}
+.btn-pdf{padding:.7rem 1.4rem;background:var(--accent);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;}
+.btn-pdf:hover{background:var(--accent2);box-shadow:0 4px 14px rgba(59,91,219,.3);transform:translateY(-1px);}
+.btn-wa{padding:.7rem 1.4rem;background:#ebfbee;border:1px solid #b2f2bb;color:#2f9e44;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;text-decoration:none;}
+.btn-wa:hover{background:#d3f9d8;transform:translateY(-1px);}
+
+/* ── APARTMAN ── */
+.apt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.9rem;}
+.apt-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;box-shadow:var(--shadow-xs);transition:all .2s;}
+.apt-card:hover{box-shadow:var(--shadow-md);border-color:var(--accent-soft);}
+.apt-card-name{font-size:.93rem;font-weight:800;color:var(--text);margin-bottom:.2rem;}
+.apt-card-sub{font-size:.76rem;color:var(--muted);}
+.apt-card-badge{display:inline-flex;align-items:center;gap:.3rem;background:var(--bg3);border:1px solid var(--border);padding:.18rem .6rem;border-radius:20px;font-size:.68rem;color:var(--muted);font-weight:700;margin-top:.55rem;}
+.apt-card-actions{display:flex;gap:.45rem;margin-top:.9rem;}
+.apt-card-actions button{padding:.38rem .75rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.73rem;cursor:pointer;font-weight:700;transition:all .2s;}
+.btn-edit-apt{background:var(--accent-light);border:1px solid var(--accent-soft);color:var(--accent);}
+.btn-edit-apt:hover{background:var(--accent-soft);}
+.btn-del-apt{background:var(--danger-bg);border:1px solid var(--danger-soft);color:var(--danger);}
+.btn-del-apt:hover{background:var(--danger-soft);}
+
+/* ── MAKBUz ── */
+.makbuz-layout{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;}
+.makbuz-form-area{}
+.makbuz-kalem-row{
+  display:grid;grid-template-columns:1fr 90px 90px 28px;gap:.5rem;align-items:end;margin-bottom:.5rem;
+}
+.makbuz-kalem-row input{
+  background:var(--bg3);border:1.5px solid var(--border);color:var(--text);
+  padding:.55rem .75rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.82rem;outline:none;transition:all .2s;
+}
+.makbuz-kalem-row input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(59,91,219,.1);}
+.makbuz-kalem-row select{
+  background:var(--bg3);border:1.5px solid var(--border);color:var(--text);
+  padding:.55rem .5rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.82rem;outline:none;
+}
+.btn-add-kalem{
+  padding:.55rem;background:var(--accent-light);border:1.5px dashed var(--accent-soft);
+  color:var(--accent);border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;
+  font-size:.78rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;margin-top:.5rem;
+}
+.btn-add-kalem:hover{background:var(--accent-soft);}
+.btn-remove-kalem{background:transparent;border:none;color:var(--muted2);cursor:pointer;font-size:1rem;padding:.3rem;border-radius:5px;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.btn-remove-kalem:hover{color:var(--danger);background:var(--danger-bg);}
+
+/* Makbuz önizleme */
+.makbuz-preview-wrap{
+  background:#fff;border:2px solid var(--border);border-radius:var(--r);
+  box-shadow:var(--shadow-sm);overflow:hidden;position:sticky;top:90px;
+}
+.makbuz-preview-label{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  padding:.6rem 1rem;font-size:.7rem;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:.4rem;
+}
+.makbuz-pdf-inner{
+  padding:1.8rem;font-family:'Open Sans',sans-serif;min-height:480px;
+}
+.mkb-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding-bottom:1rem;margin-bottom:1rem;border-bottom:2.5px solid #1a1d2e;
+}
+.mkb-brand-name{font-size:.95rem;font-weight:800;color:#1a1d2e;line-height:1.3;}
+.mkb-brand-sub{font-size:.68rem;color:#888;margin-top:.15rem;line-height:1.5;}
+.mkb-title-box{text-align:right;}
+.mkb-title{font-size:1.3rem;font-weight:900;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+.mkb-no{font-size:.72rem;color:#888;margin-top:.2rem;font-weight:600;}
+.mkb-meta{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;background:#f5f6fa;border-radius:7px;padding:.8rem;margin-bottom:.9rem;}
+.mkb-meta-item label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#7c82a3;display:block;margin-bottom:.1rem;}
+.mkb-meta-item span{font-size:.78rem;font-weight:700;color:#1a1d2e;}
+.mkb-alici-box{background:#eef2ff;border-left:3px solid var(--accent);padding:.65rem .85rem;border-radius:0 7px 7px 0;margin-bottom:.9rem;}
+.mkb-alici-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#7c82a3;margin-bottom:.1rem;}
+.mkb-alici-name{font-size:.85rem;font-weight:800;color:#1a1d2e;}
+.mkb-alici-addr{font-size:.72rem;color:#555;line-height:1.5;}
+.mkb-table{width:100%;border-collapse:collapse;margin-bottom:.9rem;font-size:.78rem;}
+.mkb-table th{background:#1a1d2e;color:#fff;padding:.5rem .65rem;text-align:left;font-size:.65rem;font-weight:700;letter-spacing:.5px;}
+.mkb-table th:last-child,.mkb-table td:last-child{text-align:right;}
+.mkb-table td{padding:.5rem .65rem;border-bottom:1px solid #e8eaf2;color:#1a1d2e;}
+.mkb-table tfoot tr{background:#f0f2ff;}
+.mkb-table tfoot td{font-weight:800;color:#3b5bdb;border-top:2px solid var(--accent);padding:.6rem .65rem;}
+.mkb-note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:.65rem .85rem;margin-bottom:.9rem;}
+.mkb-note-label{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#92400e;margin-bottom:.15rem;}
+.mkb-note-text{font-size:.76rem;color:#78350f;line-height:1.5;}
+.mkb-footer{display:flex;justify-content:space-between;align-items:flex-end;padding-top:.9rem;border-top:1.5px solid #e0e5f0;font-size:.7rem;color:#999;}
+.mkb-imza{text-align:right;}
+.mkb-imza-line{width:110px;height:1px;background:#1a1d2e;margin:2rem auto 0.3rem;}
+.mkb-imza-label{font-size:.65rem;font-weight:700;color:#555;text-align:center;}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(20,25,60,.45);
+  display:none;align-items:center;justify-content:center;z-index:500;
+  backdrop-filter:blur(4px);padding:1rem;
+}
+.modal-overlay.open{display:flex;}
+.modal-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.8rem;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;
+  animation:slideUp .3s ease;box-shadow:var(--shadow-lg);
+}
+.modal-box h3{font-size:1rem;font-weight:800;margin-bottom:1.3rem;color:var(--accent);}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;line-height:1;margin-top:-.2rem;}
+.modal-close:hover{color:var(--text);}
+.modal-img{width:100%;border-radius:var(--r-sm);max-height:400px;object-fit:contain;margin-top:.8rem;border:1px solid var(--border);}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:3rem 2rem;color:var(--muted);}
+.empty-state .empty-icon{font-size:2.5rem;display:block;margin-bottom:.8rem;opacity:.6;}
+.empty-state p{font-size:.85rem;font-weight:500;}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:1.2rem 0;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:1.8rem;right:1.8rem;
+  background:#1a1d2e;color:#fff;padding:.75rem 1.3rem;
+  border-radius:var(--r);font-weight:700;font-size:.82rem;
+  z-index:9999;transform:translateY(80px);opacity:0;
+  transition:all .3s cubic-bezier(.22,1,.36,1);box-shadow:var(--shadow-lg);
+  display:flex;align-items:center;gap:.5rem;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:#2f9e44;}
+.toast.error{background:var(--danger);}
+
+@media(max-width:900px){
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .form-grid.three,.form-grid.four{grid-template-columns:1fr 1fr;}
+  .sidebar{width:60px;}
+  .sidebar-brand-name,.nav-btn span,.user-info,.nav-section-label{display:none;}
+  .main{margin-left:60px;}
+  .makbuz-layout{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-logo-icon">🏢</div>
+      <h1>ApartmanYönet</h1>
+      <p>Akıllı Apartman Yönetim Sistemi</p>
+    </div>
+    <div class="login-box">
+      <div class="login-tabs">
+        <button class="active" id="tabAdmin" onclick="switchLoginMode('admin')">🔐 Yönetici</button>
+        <button id="tabMalik" onclick="switchLoginMode('malik')">🏠 Kat Maliki</button>
+      </div>
+      <div id="adminLoginForm">
+        <div class="field">
+          <label>Yönetici Şifresi</label>
+          <input type="password" id="adminPass" placeholder="••••••" onkeydown="if(event.key==='Enter')loginAdmin()">
+        </div>
+        <button class="btn-primary" onclick="loginAdmin()">Giriş Yap →</button>
+        <div class="error-msg" id="adminErr">⚠ Hatalı şifre!</div>
+      </div>
+      <div id="malikLoginForm" style="display:none">
+        <div class="field">
+          <label>Apartman</label>
+          <select id="malikAptSel"></select>
+        </div>
+        <div class="field">
+          <label>Şifre</label>
+          <input type="password" id="malikPass" placeholder="••••••" onkeydown="if(event.key==='Enter')loginMalik()">
+        </div>
+        <button class="btn-primary" onclick="loginMalik()">Giriş Yap →</button>
+        <div class="error-msg" id="malikErr">⚠ Hatalı şifre!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">🏢</div>
+        <span class="sidebar-brand-name">ApartmanYönet</span>
+      </div>
+      <nav class="sidebar-nav" id="adminNav">
+        <div class="nav-section-label">Yönetim</div>
+        <button class="nav-btn" onclick="showPanel('admin')" id="nav-admin">
+          <span class="nav-icon">📋</span><span>Gider Girişi</span>
+        </button>
+        <button class="nav-btn" onclick="showPanel('malik')" id="nav-malik">
+          <span class="nav-icon">👥</span><span>Kat Maliki Görünümü</span>
+        </button>
+        <button class="nav-btn" onclick="showPanel('rapor')" id="nav-rapor">
+          <span class="nav-icon">📊</span><span>Raporlar</span>
+        </button>
+        <div class="nav-section-label">Araçlar</div>
+        <button class="nav-btn" onclick="showPanel('makbuz')" id="nav-makbuz">
+          <span class="nav-icon">🧾</span><span>Makbuz Oluştur</span>
+        </button>
+        <div class="nav-section-label">Ayarlar</div>
+        <button class="nav-btn" onclick="showPanel('aptYonet')" id="nav-aptYonet">
+          <span class="nav-icon">🏗️</span><span>Apartmanlar</span>
+        </button>
+      </nav>
+      <nav class="sidebar-nav" id="malikNavSide" style="display:none">
+        <div class="nav-section-label">Özet</div>
+        <button class="nav-btn active" onclick="showPanel('malik')">
+          <span class="nav-icon">📊</span><span>Gider Özeti</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="userAvatarInitial">Y</div>
+          <div class="user-info">
+            <div class="user-info-name" id="userLabel">Yönetici</div>
+            <div class="user-info-role" id="userRole">Admin</div>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="logout()">↩ Çıkış Yap</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div id="pageHeader" class="page-header">
+        <div class="page-header-title" id="pageTitle">Gider Kontrol Merkezi</div>
+        <div class="page-header-sub" id="pageSub">Apartman giderlerini kayıt altına alın</div>
+      </div>
+      <div class="content">
+
+        <!-- GİDER PANELİ -->
+        <div class="panel" id="panel-admin">
+          <div class="stats-row" id="statsRow"></div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon">➕</div>
+                <span class="card-title">Yeni Gider Ekle</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="form-grid three" style="margin-bottom:.9rem">
+                <div class="field">
+                  <label>Apartman</label>
+                  <select id="f_apt"></select>
+                </div>
+                <div class="field">
+                  <label>Tarih</label>
+                  <input type="date" id="f_tarih">
+                </div>
+                <div class="field">
+                  <label>Gider Türü</label>
+                  <select id="f_tur" onchange="checkManualTur()">
+                    <option value="Elektrik">⚡ Elektrik</option>
+                    <option value="Su">💧 Su</option>
+                    <option value="Doğalgaz">🔥 Doğalgaz</option>
+                    <option value="Asansör Bakım">🛗 Asansör Bakım</option>
+                    <option value="Temizlik">🧹 Temizlik</option>
+                    <option value="Aidat">💰 Aidat</option>
+                    <option value="Yakıt">⛽ Yakıt</option>
+                    <option value="Demirbaş">🔧 Demirbaş</option>
+                    <option value="Diğer">✏️ Diğer</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-grid full" id="manualTurRow" style="display:none;margin-bottom:.9rem;">
+                <div class="field">
+                  <label>Gider Türü (Manuel Giriş)</label>
+                  <input type="text" id="f_tur_manual" placeholder="Örn: Kapı Tamiri">
+                </div>
+              </div>
+              <div class="form-grid" style="margin-bottom:.9rem">
+                <div class="field">
+                  <label>Açıklama</label>
+                  <input type="text" id="f_aciklama" placeholder="Örn: Kasım ayı doğalgaz faturası">
+                </div>
+                <div class="field">
+                  <label>Tutar (₺)</label>
+                  <input type="number" id="f_tutar" placeholder="0,00" min="0" step="0.01">
+                </div>
+              </div>
+              <div class="form-grid" style="margin-bottom:1.2rem">
+                <div class="field">
+                  <label>Fatura Görseli</label>
+                  <input type="file" id="f_fatura" accept="image/*,application/pdf">
+                </div>
+                <div class="field">
+                  <label>Ödeme Durumu</label>
+                  <div class="radio-group">
+                    <div class="radio-btn active odendi" id="rb_odendi" onclick="setOdeme('odendi')">✓ Ödendi</div>
+                    <div class="radio-btn" id="rb_bekliyor" onclick="setOdeme('bekliyor')">⏳ Bekliyor</div>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-submit" onclick="addGider()">💾 Gideri Kaydet</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon">📋</div>
+                <span class="card-title">Gider Listesi</span>
+              </div>
+              <div class="filter-bar">
+                <select id="filterApt" onchange="renderTable()">
+                  <option value="">Tüm Apartmanlar</option>
+                </select>
+                <select id="filterAy" onchange="renderTable()">
+                  <option value="">Tüm Aylar</option>
+                </select>
+                <select id="filterTur" onchange="renderTable()">
+                  <option value="">Tüm Türler</option>
+                </select>
+              </div>
+            </div>
+            <div id="tableContainer"></div>
+          </div>
+        </div>
+
+        <!-- KAT MALİKİ PANELİ -->
+        <div class="panel" id="panel-malik">
+          <div id="malikAptFilter" style="margin-bottom:1.2rem;display:none;">
+            <div class="field" style="max-width:280px;">
+              <label>Apartman Seç</label>
+              <select id="malikAptView" onchange="renderMalik()"></select>
+            </div>
+          </div>
+          <div id="malikContent"></div>
+        </div>
+
+        <!-- RAPORLAR -->
+        <div class="panel" id="panel-rapor">
+          <div class="rapor-filter-row">
+            <div class="rapor-filter-card">
+              <label>Apartman</label>
+              <select id="r_apt"></select>
+            </div>
+            <div class="rapor-filter-card">
+              <label>Dönem</label>
+              <select id="r_ay"></select>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon">📊</div>
+                <span class="card-title">Rapor Önizleme</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="rapor-summary" id="raporSummary"></div>
+              <div id="raporTable"></div>
+              <div class="rapor-actions">
+                <button class="btn-pdf" onclick="downloadPDF()">📥 PDF İndir</button>
+                <button class="btn-wa" onclick="shareWA()">💬 WhatsApp'ta Paylaş</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAKBUz -->
+        <div class="panel" id="panel-makbuz">
+          <div class="makbuz-layout">
+            <!-- FORM -->
+            <div class="makbuz-form-area">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-left">
+                    <div class="card-icon">🏢</div>
+                    <span class="card-title">Düzenleyen Bilgileri</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="field">
+                    <label>Apartman / Yönetim Adı</label>
+                    <input type="text" id="mkb_kaynak_ad" placeholder="Örn: Çiçek Apartmanı Yönetimi" oninput="updatePreview()">
+                  </div>
+                  <div class="field">
+                    <label>Adres / İletişim</label>
+                    <input type="text" id="mkb_kaynak_adres" placeholder="Örn: Kadıköy, İstanbul | 0212 xxx xx xx" oninput="updatePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-left">
+                    <div class="card-icon">👤</div>
+                    <span class="card-title">Alıcı Bilgileri</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="field">
+                    <label>Ad Soyad / Daire</label>
+                    <input type="text" id="mkb_alici_ad" placeholder="Örn: Ahmet Yılmaz — Daire 3" oninput="updatePreview()">
+                  </div>
+                  <div class="field">
+                    <label>Adres (isteğe bağlı)</label>
+                    <input type="text" id="mkb_alici_adres" placeholder="Örn: Gül Sokak No:5 D:3" oninput="updatePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-left">
+                    <div class="card-icon">📅</div>
+                    <span class="card-title">Makbuz Detayları</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="form-grid">
+                    <div class="field">
+                      <label>Makbuz No</label>
+                      <input type="text" id="mkb_no" placeholder="Örn: 2024-001" oninput="updatePreview()">
+                    </div>
+                    <div class="field">
+                      <label>Tarih</label>
+                      <input type="date" id="mkb_tarih" oninput="updatePreview()">
+                    </div>
+                  </div>
+                  <div class="form-grid">
+                    <div class="field">
+                      <label>Dönem</label>
+                      <input type="text" id="mkb_donem" placeholder="Örn: Kasım 2024" oninput="updatePreview()">
+                    </div>
+                    <div class="field">
+                      <label>Ödeme Yöntemi</label>
+                      <select id="mkb_odeme_yontemi" onchange="updatePreview()">
+                        <option>Nakit</option>
+                        <option>Havale / EFT</option>
+                        <option>Kredi Kartı</option>
+                        <option>Çek</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-left">
+                    <div class="card-icon">💰</div>
+                    <span class="card-title">Ödeme Kalemleri</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div style="display:grid;grid-template-columns:1fr 90px 90px 28px;gap:.5rem;margin-bottom:.4rem;">
+                    <div style="font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;">Açıklama</div>
+                    <div style="font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;">Miktar</div>
+                    <div style="font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;">Tutar (₺)</div>
+                    <div></div>
+                  </div>
+                  <div id="kalemler"></div>
+                  <button class="btn-add-kalem" onclick="addKalem()">+ Kalem Ekle</button>
+                  <div class="divider"></div>
+                  <div class="field">
+                    <label>Notlar / Açıklamalar (isteğe bağlı)</label>
+                    <textarea id="mkb_not" placeholder="Örn: Ödeme alındığına dair bu makbuz geçerlidir." oninput="updatePreview()" rows="2"></textarea>
+                  </div>
+                  <button class="btn-submit" onclick="downloadMakbuzPDF()">📥 Makbuz PDF İndir</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PREVİEW -->
+            <div>
+              <div class="makbuz-preview-wrap">
+                <div class="makbuz-preview-label">👁 Canlı Önizleme</div>
+                <div class="makbuz-pdf-inner" id="makbuzPreview"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- APARTMAN -->
+        <div class="panel" id="panel-aptYonet">
+          <div class="card" style="max-width:480px;margin-bottom:1.5rem;">
+            <div class="card-header">
+              <div class="card-header-left">
+                <div class="card-icon">🏗️</div>
+                <span class="card-title">Yeni Apartman Ekle</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label>Apartman Adı</label>
+                <input type="text" id="apt_name" placeholder="Örn: Çiçek Apartmanı">
+              </div>
+              <div class="field">
+                <label>Kat Maliki Şifresi</label>
+                <input type="text" id="apt_pass" placeholder="Örn: 1234">
+              </div>
+              <div class="field">
+                <label>Notlar (isteğe bağlı)</label>
+                <input type="text" id="apt_note" placeholder="Örn: Kadıköy, 8 daireli">
+              </div>
+              <button class="btn-submit" onclick="addApt()">➕ Apartman Ekle</button>
+            </div>
+          </div>
+          <div class="apt-grid" id="aptGrid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Fatura -->
+<div class="modal-overlay" id="imgModal">
+  <div class="modal-box" style="max-width:580px;">
+    <button class="modal-close" onclick="closeModal('imgModal')">✕</button>
+    <h3>📎 Fatura Görseli</h3>
+    <img class="modal-img" id="modalImg" src="" alt="Fatura">
+  </div>
+</div>
+
+<!-- MODAL: Edit Apt -->
+<div class="modal-overlay" id="editAptModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('editAptModal')">✕</button>
+    <h3>✏️ Apartman Düzenle</h3>
+    <input type="hidden" id="edit_apt_id">
+    <div class="field"><label>Apartman Adı</label><input type="text" id="edit_apt_name"></div>
+    <div class="field"><label>Kat Maliki Şifresi</label><input type="text" id="edit_apt_pass"></div>
+    <div class="field"><label>Notlar</label><input type="text" id="edit_apt_note"></div>
+    <button class="btn-submit" onclick="saveEditApt()">💾 Kaydet</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────
+const ADMIN_PASS = '168265';
+let currentUser = null;
+let currentMalikApt = null;
+let odemeState = 'odendi';
+let kalemSayac = 0;
+
+let data = JSON.parse(localStorage.getItem('apt_data_v2') || 'null') || {
+  apartments: [],
+  giderler: []
+};
+function save() { localStorage.setItem('apt_data_v2', JSON.stringify(data)); }
+
+const panelMeta = {
+  admin:    { title: 'Gider Kontrol Merkezi',   sub: 'Apartman giderlerini kayıt altına alın' },
+  malik:    { title: 'Kat Maliki Görünümü',     sub: 'Giderlerinizi şeffaf biçimde takip edin' },
+  rapor:    { title: 'Otomatik Rapor Sistemi',  sub: 'Aylık gider raporlarını indirin veya paylaşın' },
+  makbuz:   { title: 'Makbuz Oluşturucu',       sub: 'Aidat, yakıt ve demirbaş makbuzlarını PDF olarak hazırlayın' },
+  aptYonet: { title: 'Apartman Yönetimi',       sub: 'Apartman ekleyin, şifrelerini belirleyin' }
+};
+
+// ─── LOGIN ────────────────────────────────────────
+function switchLoginMode(mode) {
+  document.getElementById('tabAdmin').classList.toggle('active', mode === 'admin');
+  document.getElementById('tabMalik').classList.toggle('active', mode === 'malik');
+  document.getElementById('adminLoginForm').style.display = mode === 'admin' ? 'block' : 'none';
+  document.getElementById('malikLoginForm').style.display = mode === 'malik' ? 'block' : 'none';
+  if (mode === 'malik') populateMalikAptSel();
+}
+function populateMalikAptSel() {
+  const sel = document.getElementById('malikAptSel');
+  sel.innerHTML = data.apartments.length
+    ? data.apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('')
+    : '<option value="">— Apartman yok —</option>';
+}
+function loginAdmin() {
+  if (document.getElementById('adminPass').value === ADMIN_PASS) {
+    currentUser = 'admin';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('adminNav').style.display = 'flex';
+    document.getElementById('malikNavSide').style.display = 'none';
+    document.getElementById('userLabel').textContent = 'Yönetici';
+    document.getElementById('userRole').textContent = 'Admin';
+    document.getElementById('userAvatarInitial').textContent = 'Y';
+    initAdmin(); showPanel('admin');
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+  }
+}
+function loginMalik() {
+  const aptId = document.getElementById('malikAptSel').value;
+  const pass = document.getElementById('malikPass').value;
+  const apt = data.apartments.find(a => a.id === aptId);
+  if (apt && apt.pass === pass) {
+    currentUser = 'malik';
+    currentMalikApt = aptId;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('adminNav').style.display = 'none';
+    document.getElementById('malikNavSide').style.display = 'flex';
+    document.getElementById('userLabel').textContent = apt.name;
+    document.getElementById('userRole').textContent = 'Kat Maliki';
+    document.getElementById('userAvatarInitial').textContent = apt.name[0];
+    showPanel('malik'); renderMalik();
+  } else {
+    document.getElementById('malikErr').style.display = 'block';
+  }
+}
+function logout() {
+  currentUser = null; currentMalikApt = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('adminPass').value = '';
+  document.getElementById('malikPass').value = '';
+  document.getElementById('adminErr').style.display = 'none';
+  document.getElementById('malikErr').style.display = 'none';
+}
+
+// ─── PANELS ────────────────────────────────────────
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('nav-' + name);
+  if (btn) btn.classList.add('active');
+  const meta = panelMeta[name] || {};
+  document.getElementById('pageTitle').textContent = meta.title || '';
+  document.getElementById('pageSub').textContent = meta.sub || '';
+  if (name === 'admin') initAdmin();
+  if (name === 'malik') renderMalik();
+  if (name === 'rapor') initRapor();
+  if (name === 'makbuz') initMakbuz();
+  if (name === 'aptYonet') renderAptGrid();
+}
+
+// ─── ADMIN / GİDER ────────────────────────────────
+function initAdmin() {
+  const aptSel = document.getElementById('f_apt');
+  aptSel.innerHTML = data.apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  const filterApt = document.getElementById('filterApt');
+  filterApt.innerHTML = '<option value="">Tüm Apartmanlar</option>' +
+    data.apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  const months = [...new Set(data.giderler.map(g => g.tarih.slice(0,7)))].sort().reverse();
+  document.getElementById('filterAy').innerHTML = '<option value="">Tüm Aylar</option>' +
+    months.map(m => `<option value="${m}">${formatMonth(m)}</option>`).join('');
+  const types = [...new Set(data.giderler.map(g => g.tur))];
+  document.getElementById('filterTur').innerHTML = '<option value="">Tüm Türler</option>' +
+    types.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('f_tarih').value = new Date().toISOString().slice(0,10);
+  renderStats(); renderTable();
+}
+
+function renderStats() {
+  const now = new Date();
+  const thisMonth = now.toISOString().slice(0,7);
+  const thisMonthG = data.giderler.filter(g => g.tarih.startsWith(thisMonth));
+  const totalThisMonth = thisMonthG.reduce((s,g) => s+g.tutar, 0);
+  const bekliyor = data.giderler.filter(g => g.odeme==='bekliyor').reduce((s,g) => s+g.tutar, 0);
+  const totalAll = data.giderler.reduce((s,g) => s+g.tutar, 0);
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon blue">📅</div>
+      <div class="stat-label">Bu Ay Toplam</div>
+      <div class="stat-value">${fmt(totalThisMonth)}<span class="stat-unit">₺</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red">⏳</div>
+      <div class="stat-label">Bekleyen Ödeme</div>
+      <div class="stat-value" style="color:var(--danger)">${fmt(bekliyor)}<span class="stat-unit">₺</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">💰</div>
+      <div class="stat-label">Toplam Gider</div>
+      <div class="stat-value">${fmt(totalAll)}<span class="stat-unit">₺</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">📁</div>
+      <div class="stat-label">Kayıt Sayısı</div>
+      <div class="stat-value">${data.giderler.length}</div>
+    </div>`;
+}
+
+function renderTable() {
+  const filterApt = document.getElementById('filterApt').value;
+  const filterAy  = document.getElementById('filterAy').value;
+  const filterTur = document.getElementById('filterTur').value;
+  let giderler = [...data.giderler].sort((a,b) => b.tarih.localeCompare(a.tarih));
+  if (filterApt) giderler = giderler.filter(g => g.aptId === filterApt);
+  if (filterAy)  giderler = giderler.filter(g => g.tarih.startsWith(filterAy));
+  if (filterTur) giderler = giderler.filter(g => g.tur === filterTur);
+  const aptMap = Object.fromEntries(data.apartments.map(a => [a.id, a.name]));
+  if (!giderler.length) {
+    document.getElementById('tableContainer').innerHTML = `<div class="empty-state"><span class="empty-icon">📭</span><p>Henüz gider kaydı yok</p></div>`;
+    return;
+  }
+  document.getElementById('tableContainer').innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Apartman</th><th>Tarih</th><th>Tür</th><th>Açıklama</th>
+        <th>Tutar</th><th>Fatura</th><th>Durum</th><th></th>
+      </tr></thead>
+      <tbody>
+      ${giderler.map(g => `
+        <tr>
+          <td style="font-weight:600;color:var(--text)">${aptMap[g.aptId]||'—'}</td>
+          <td>${formatDate(g.tarih)}</td>
+          <td><span style="background:var(--accent-light);color:var(--accent);padding:.15rem .55rem;border-radius:20px;font-size:.7rem;font-weight:700;">${g.tur}</span></td>
+          <td style="color:var(--muted);font-style:italic">${g.aciklama||'—'}</td>
+          <td style="font-weight:800;color:var(--accent)">${fmt(g.tutar)} ₺</td>
+          <td>${g.fatura?`<button class="fatura-btn" onclick="openFatura('${g.id}')">📎 Görüntüle</button>`:`<span class="fatura-btn no-file">Yok</span>`}</td>
+          <td><span class="badge ${g.odeme}">${g.odeme==='odendi'?'✓ Ödendi':'⏳ Bekliyor'}</span></td>
+          <td><button class="del-btn" onclick="deleteGider('${g.id}')">🗑</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function checkManualTur() {
+  document.getElementById('manualTurRow').style.display =
+    document.getElementById('f_tur').value === 'Diğer' ? 'grid' : 'none';
+}
+function setOdeme(val) {
+  odemeState = val;
+  document.getElementById('rb_odendi').className = 'radio-btn' + (val==='odendi'?' active odendi':'');
+  document.getElementById('rb_bekliyor').className = 'radio-btn' + (val==='bekliyor'?' active bekliyor':'');
+}
+async function addGider() {
+  const aptId = document.getElementById('f_apt').value;
+  const tarih = document.getElementById('f_tarih').value;
+  const turSel = document.getElementById('f_tur').value;
+  const turManual = document.getElementById('f_tur_manual').value.trim();
+  const tur = turSel === 'Diğer' ? (turManual||'Diğer') : turSel;
+  const aciklama = document.getElementById('f_aciklama').value.trim();
+  const tutar = parseFloat(document.getElementById('f_tutar').value);
+  const faturaFile = document.getElementById('f_fatura').files[0];
+  if (!aptId||!tarih||!tutar||tutar<=0) { showToast('Apartman, tarih ve tutar zorunludur!','error'); return; }
+  let faturaData = null;
+  if (faturaFile) faturaData = await readFileAsDataURL(faturaFile);
+  data.giderler.push({ id: Date.now().toString(), aptId, tarih, tur, aciklama, tutar, fatura: faturaData, odeme: odemeState });
+  save();
+  showToast('Gider başarıyla kaydedildi!','success');
+  document.getElementById('f_aciklama').value = '';
+  document.getElementById('f_tutar').value = '';
+  document.getElementById('f_fatura').value = '';
+  document.getElementById('f_tur').value = 'Elektrik';
+  checkManualTur(); setOdeme('odendi'); initAdmin();
+}
+function readFileAsDataURL(file) {
+  return new Promise((res,rej) => { const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+}
+function deleteGider(id) {
+  if (!confirm('Bu gider kaydını silmek istediğinize emin misiniz?')) return;
+  data.giderler = data.giderler.filter(g => g.id !== id);
+  save(); initAdmin(); showToast('Gider silindi.');
+}
+function openFatura(id) {
+  const g = data.giderler.find(g => g.id === id);
+  if (!g||!g.fatura) return;
+  document.getElementById('modalImg').src = g.fatura;
+  document.getElementById('imgModal').classList.add('open');
+}
+
+// ─── KAT MALİKİ ───────────────────────────────────
+function renderMalik() {
+  const isAdmin = currentUser === 'admin';
+  document.getElementById('malikAptFilter').style.display = isAdmin ? 'block' : 'none';
+  if (isAdmin) {
+    const sel = document.getElementById('malikAptView');
+    sel.innerHTML = data.apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  }
+  const aptId = isAdmin ? document.getElementById('malikAptView').value : currentMalikApt;
+  if (!aptId) { document.getElementById('malikContent').innerHTML = `<div class="empty-state"><span class="empty-icon">🏢</span><p>Apartman seçin</p></div>`; return; }
+  const apt = data.apartments.find(a => a.id === aptId);
+  const giderler = data.giderler.filter(g => g.aptId === aptId).sort((a,b) => b.tarih.localeCompare(a.tarih));
+  const now = new Date();
+  const thisMonth = now.toISOString().slice(0,7);
+  const monthTotal = giderler.filter(g => g.tarih.startsWith(thisMonth)).reduce((s,g) => s+g.tutar, 0);
+  let html = `
+    <div class="malik-header">
+      <div class="malik-info">
+        <h2>🏢 ${apt?apt.name:'—'}</h2>
+        <p>${apt&&apt.note?apt.note:'Gider Özeti'}</p>
+      </div>
+      <div>
+        <div class="malik-total-label">Bu Ay Toplam</div>
+        <div class="malik-total-val">${fmt(monthTotal)} ₺</div>
+      </div>
+    </div>`;
+  if (!giderler.length) {
+    html += `<div class="empty-state"><span class="empty-icon">📭</span><p>Bu apartmana ait gider bulunmuyor</p></div>`;
+  } else {
+    html += `<div class="gider-cards">`;
+    giderler.forEach(g => {
+      html += `
+        <div class="gider-card">
+          <div class="gider-card-top">
+            <span class="gider-type-badge">${g.tur}</span>
+            <span class="gider-amount">${fmt(g.tutar)} ₺</span>
+          </div>
+          <div class="gider-desc">${g.aciklama||'Açıklama yok'}</div>
+          <div class="gider-card-footer">
+            <span class="gider-date">📅 ${formatDate(g.tarih)}</span>
+            <div style="display:flex;gap:.4rem;align-items:center;">
+              ${g.fatura?`<button class="fatura-btn" onclick="openFatura('${g.id}')">📎 Fatura</button>`:''}
+              <span class="badge ${g.odeme}">${g.odeme==='odendi'?'✓ Ödendi':'⏳ Bekliyor'}</span>
+            </div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  document.getElementById('malikContent').innerHTML = html;
+}
+
+// ─── RAPORLAR ─────────────────────────────────────
+function initRapor() {
+  const rApt = document.getElementById('r_apt');
+  rApt.innerHTML = data.apartments.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+  const months = [...new Set(data.giderler.map(g => g.tarih.slice(0,7)))].sort().reverse();
+  const now = new Date().toISOString().slice(0,7);
+  const allMonths = months.length ? months : [now];
+  document.getElementById('r_ay').innerHTML = allMonths.map(m => `<option value="${m}">${formatMonth(m)}</option>`).join('');
+  document.getElementById('r_apt').onchange = renderRapor;
+  document.getElementById('r_ay').onchange = renderRapor;
+  renderRapor();
+}
+function renderRapor() {
+  const aptId = document.getElementById('r_apt').value;
+  const ay = document.getElementById('r_ay').value;
+  const giderler = data.giderler.filter(g => g.aptId===aptId && (!ay||g.tarih.startsWith(ay)));
+  const total = giderler.reduce((s,g)=>s+g.tutar,0);
+  const odendi = giderler.filter(g=>g.odeme==='odendi').reduce((s,g)=>s+g.tutar,0);
+  const bekliyor = giderler.filter(g=>g.odeme==='bekliyor').reduce((s,g)=>s+g.tutar,0);
+  document.getElementById('raporSummary').innerHTML = `
+    <div class="rapor-sum-item"><label>Toplam Gider</label><span>${fmt(total)} ₺</span></div>
+    <div class="rapor-sum-item"><label>Ödenen</label><span style="color:var(--success)">${fmt(odendi)} ₺</span></div>
+    <div class="rapor-sum-item"><label>Bekleyen</label><span style="color:var(--danger)">${fmt(bekliyor)} ₺</span></div>`;
+  if (!giderler.length) {
+    document.getElementById('raporTable').innerHTML = `<div class="empty-state" style="padding:1.5rem"><span class="empty-icon">📭</span><p>Bu dönemde gider yok</p></div>`;
+    return;
+  }
+  document.getElementById('raporTable').innerHTML = `
+    <div class="divider"></div>
+    <table>
+      <thead><tr><th>Tarih</th><th>Tür</th><th>Açıklama</th><th>Tutar</th><th>Durum</th></tr></thead>
+      <tbody>
+      ${giderler.sort((a,b)=>b.tarih.localeCompare(a.tarih)).map(g=>`
+        <tr>
+          <td>${formatDate(g.tarih)}</td>
+          <td>${g.tur}</td>
+          <td style="color:var(--muted);font-style:italic">${g.aciklama||'—'}</td>
+          <td style="font-weight:800;color:var(--accent)">${fmt(g.tutar)} ₺</td>
+          <td><span class="badge ${g.odeme}">${g.odeme==='odendi'?'✓ Ödendi':'⏳ Bekliyor'}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+function downloadPDF() {
+  const aptId = document.getElementById('r_apt').value;
+  const ay = document.getElementById('r_ay').value;
+  const apt = data.apartments.find(a => a.id===aptId);
+  const giderler = data.giderler.filter(g => g.aptId===aptId && (!ay||g.tarih.startsWith(ay)));
+  const total = giderler.reduce((s,g)=>s+g.tutar,0);
+  const odendi = giderler.filter(g=>g.odeme==='odendi').reduce((s,g)=>s+g.tutar,0);
+  const bekliyor = giderler.filter(g=>g.odeme==='bekliyor').reduce((s,g)=>s+g.tutar,0);
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF();
+  // White background
+  doc.setFillColor(250,251,255); doc.rect(0,0,210,297,'F');
+  // Header bar
+  doc.setFillColor(59,91,219); doc.rect(0,0,210,38,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text('APARTMAN YONET', 105,18,{align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('Aylik Gider Raporu', 105,28,{align:'center'});
+  // Info
+  doc.setTextColor(26,29,46); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text(apt?apt.name:'—', 20,52);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(124,130,163);
+  doc.text((ay?formatMonth(ay):'Tum Donem') + '   •   Olusturulma: ' + new Date().toLocaleDateString('tr-TR'), 20,60);
+  // Summary boxes
+  const boxes = [[15,70,55,28,'TOPLAM GIDER',fmt(total)+' TL',[59,91,219]],[78,70,55,28,'ODENEN',fmt(odendi)+' TL',[47,158,68]],[141,70,55,28,'BEKLEYEN',fmt(bekliyor)+' TL',[214,48,49]]];
+  boxes.forEach(([x,y,w,h,label,val,rgb]) => {
+    doc.setFillColor(248,249,255); doc.roundedRect(x,y,w,h,4,4,'F');
+    doc.setDrawColor(...rgb); doc.setLineWidth(1.2); doc.roundedRect(x,y,w,h,4,4,'S');
+    doc.setTextColor(124,130,163); doc.setFontSize(7); doc.setFont('helvetica','bold');
+    doc.text(label, x+w/2, y+9, {align:'center'});
+    doc.setTextColor(...rgb); doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text(val, x+w/2, y+20, {align:'center'});
+  });
+  // Table header
+  let y2 = 112;
+  doc.setFillColor(59,91,219); doc.rect(15,y2,180,9,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+  ['TARIH','TUR','ACIKLAMA','TUTAR','DURUM'].forEach((h,i) => {
+    const xs = [18,50,90,145,172];
+    doc.text(h, xs[i], y2+6);
+  });
+  y2 += 12;
+  giderler.sort((a,b)=>b.tarih.localeCompare(a.tarih)).forEach((g,i) => {
+    if (y2 > 272) { doc.addPage(); doc.setFillColor(250,251,255); doc.rect(0,0,210,297,'F'); y2=20; }
+    if (i%2===0) { doc.setFillColor(245,247,255); doc.rect(15,y2-4,180,9,'F'); }
+    doc.setTextColor(26,29,46); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text(formatDate(g.tarih), 18, y2);
+    doc.text(g.tur.substring(0,14), 50, y2);
+    doc.text((g.aciklama||'—').substring(0,24), 90, y2);
+    doc.setFont('helvetica','bold'); doc.setTextColor(59,91,219);
+    doc.text(fmt(g.tutar)+' TL', 145, y2);
+    if (g.odeme==='odendi') { doc.setTextColor(47,158,68); doc.text('Odendi',172,y2); }
+    else { doc.setTextColor(214,48,49); doc.text('Bekliyor',172,y2); }
+    doc.setDrawColor(224,229,240); doc.setLineWidth(0.3);
+    doc.line(15,y2+4,195,y2+4);
+    y2 += 10;
+  });
+  doc.save(`Rapor_${apt?apt.name:'Apt'}_${ay||'tum'}.pdf`);
+  showToast('PDF başarıyla indirildi!','success');
+}
+function shareWA() {
+  const aptId = document.getElementById('r_apt').value;
+  const ay = document.getElementById('r_ay').value;
+  const apt = data.apartments.find(a => a.id===aptId);
+  const giderler = data.giderler.filter(g => g.aptId===aptId && (!ay||g.tarih.startsWith(ay)));
+  const total = giderler.reduce((s,g)=>s+g.tutar,0);
+  const odendi = giderler.filter(g=>g.odeme==='odendi').reduce((s,g)=>s+g.tutar,0);
+  const bekliyor = giderler.filter(g=>g.odeme==='bekliyor').reduce((s,g)=>s+g.tutar,0);
+  let msg = `🏢 *${apt?apt.name:'Apartman'}* – ${ay?formatMonth(ay):'Tüm Dönem'} Raporu\n\n`;
+  msg += `📊 Toplam Gider: *${fmt(total)} ₺*\n✅ Ödenen: ${fmt(odendi)} ₺\n⏳ Bekleyen: ${fmt(bekliyor)} ₺\n\n📋 *Gider Kalemleri:*\n`;
+  giderler.forEach(g => {
+    msg += `• ${g.tur} – ${fmt(g.tutar)} ₺ (${formatDate(g.tarih)})\n`;
+    if (g.aciklama) msg += `  _${g.aciklama}_\n`;
+  });
+  msg += `\n_ApartmanYönet ile oluşturuldu_`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+
+// ─── MAKBUz ────────────────────────────────────────
+function initMakbuz() {
+  document.getElementById('mkb_tarih').value = new Date().toISOString().slice(0,10);
+  if (!document.getElementById('mkb_no').value) {
+    document.getElementById('mkb_no').value = 'MKB-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*900)+100);
+  }
+  if (document.getElementById('kalemler').children.length === 0) {
+    addKalem('Aidat', '1', '');
+  }
+  updatePreview();
+}
+
+function addKalem(aciklama='', miktar='1', tutar='') {
+  kalemSayac++;
+  const id = 'kalem_' + kalemSayac;
+  const div = document.createElement('div');
+  div.className = 'makbuz-kalem-row';
+  div.id = id;
+  div.innerHTML = `
+    <select oninput="syncKalemSelect(this)" style="background:var(--bg3);border:1.5px solid var(--border);color:var(--text);padding:.55rem .5rem;border-radius:var(--r-sm);font-family:'Open Sans',sans-serif;font-size:.82rem;outline:none;">
+      <option ${aciklama==='Aidat'?'selected':''}>Aidat</option>
+      <option ${aciklama==='Yakıt'?'selected':''}>Yakıt</option>
+      <option ${aciklama==='Demirbaş'?'selected':''}>Demirbaş</option>
+      <option ${aciklama==='Elektrik'?'selected':''}>Elektrik</option>
+      <option ${aciklama==='Su'?'selected':''}>Su</option>
+      <option ${aciklama==='Doğalgaz'?'selected':''}>Doğalgaz</option>
+      <option ${aciklama==='Asansör Bakım'?'selected':''}>Asansör Bakım</option>
+      <option ${aciklama==='Temizlik'?'selected':''}>Temizlik</option>
+      <option value="__diger__">Diğer (Yaz)...</option>
+    </select>
+    <input type="number" placeholder="Miktar" value="${miktar}" min="1" step="1" oninput="updatePreview()">
+    <input type="number" placeholder="Tutar ₺" value="${tutar}" min="0" step="0.01" oninput="updatePreview()">
+    <button class="btn-remove-kalem" onclick="removeKalem('${id}')">✕</button>`;
+  document.getElementById('kalemler').appendChild(div);
+  updatePreview();
+}
+
+function syncKalemSelect(sel) {
+  if (sel.value === '__diger__') {
+    const custom = prompt('Kalem açıklamasını girin:');
+    if (custom) {
+      const opt = document.createElement('option');
+      opt.value = custom; opt.textContent = custom; opt.selected = true;
+      sel.appendChild(opt);
+    } else {
+      sel.selectedIndex = 0;
+    }
+  }
+  updatePreview();
+}
+
+function removeKalem(id) {
+  const el = document.getElementById(id);
+  if (el) { el.remove(); updatePreview(); }
+}
+
+function getKalemler() {
+  const rows = document.getElementById('kalemler').querySelectorAll('.makbuz-kalem-row');
+  const result = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const sel = row.querySelector('select');
+    const aciklama = sel ? sel.value : '';
+    const miktar = parseFloat(inputs[0]?.value) || 1;
+    const tutar = parseFloat(inputs[1]?.value) || 0;
+    if (aciklama) result.push({ aciklama, miktar, tutar });
+  });
+  return result;
+}
+
+function updatePreview() {
+  const kaynakAd = document.getElementById('mkb_kaynak_ad')?.value || '';
+  const kaynakAdres = document.getElementById('mkb_kaynak_adres')?.value || '';
+  const aliciAd = document.getElementById('mkb_alici_ad')?.value || '';
+  const aliciAdres = document.getElementById('mkb_alici_adres')?.value || '';
+  const mkbNo = document.getElementById('mkb_no')?.value || '';
+  const mkbTarih = document.getElementById('mkb_tarih')?.value || '';
+  const donem = document.getElementById('mkb_donem')?.value || '';
+  const odemeY = document.getElementById('mkb_odeme_yontemi')?.value || 'Nakit';
+  const not = document.getElementById('mkb_not')?.value || '';
+  const kalemler = getKalemler();
+  const genel = kalemler.reduce((s, k) => s + (k.miktar * k.tutar), 0);
+
+  const preview = document.getElementById('makbuzPreview');
+  if (!preview) return;
+
+  preview.innerHTML = `
+    <div class="mkb-header">
+      <div>
+        <div class="mkb-brand-name">${kaynakAd || '<span style="color:#ccc;font-style:italic;font-weight:400">Apartman / Yönetim Adı</span>'}</div>
+        <div class="mkb-brand-sub">${kaynakAdres || ''}</div>
+      </div>
+      <div class="mkb-title-box">
+        <div class="mkb-title">MAKBUZ</div>
+        <div class="mkb-no">No: ${mkbNo || '—'}</div>
+      </div>
+    </div>
+    <div class="mkb-meta">
+      <div class="mkb-meta-item"><label>Tarih</label><span>${mkbTarih ? formatDate(mkbTarih) : '—'}</span></div>
+      <div class="mkb-meta-item"><label>Dönem</label><span>${donem || '—'}</span></div>
+      <div class="mkb-meta-item"><label>Ödeme Yöntemi</label><span>${odemeY}</span></div>
+      <div class="mkb-meta-item"><label>Genel Toplam</label><span style="color:var(--accent);font-weight:800">${fmt(genel)} ₺</span></div>
+    </div>
+    <div class="mkb-alici-box">
+      <div class="mkb-alici-label">Alıcı</div>
+      <div class="mkb-alici-name">${aliciAd || '<span style="color:#bbb;font-style:italic;font-weight:400">Ad Soyad / Daire</span>'}</div>
+      ${aliciAdres ? `<div class="mkb-alici-addr">${aliciAdres}</div>` : ''}
+    </div>
+    <table class="mkb-table">
+      <thead>
+        <tr>
+          <th>Kalem Açıklaması</th>
+          <th style="text-align:center">Miktar</th>
+          <th style="text-align:right">Birim Fiyat</th>
+          <th style="text-align:right">Toplam</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${kalemler.length ? kalemler.map(k => `
+          <tr>
+            <td>${k.aciklama}</td>
+            <td style="text-align:center">${k.miktar}</td>
+            <td style="text-align:right">${fmt(k.tutar)} ₺</td>
+            <td style="text-align:right;font-weight:700">${fmt(k.miktar * k.tutar)} ₺</td>
+          </tr>`).join('') : `<tr><td colspan="4" style="text-align:center;color:#bbb;font-style:italic;padding:1rem">Kalem eklenmedi</td></tr>`}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="text-align:right;font-weight:700;color:#3b5bdb;">GENEL TOPLAM</td>
+          <td style="text-align:right;font-weight:800;font-size:.95rem;color:#3b5bdb">${fmt(genel)} ₺</td>
+        </tr>
+      </tfoot>
+    </table>
+    ${not ? `
+    <div class="mkb-note-box">
+      <div class="mkb-note-label">Not</div>
+      <div class="mkb-note-text">${not}</div>
+    </div>` : ''}
+    <div class="mkb-footer">
+      <div style="font-size:.68rem;color:#aaa">ApartmanYönet ile oluşturuldu</div>
+      <div class="mkb-imza">
+        <div class="mkb-imza-line"></div>
+        <div class="mkb-imza-label">Yönetici İmzası</div>
+      </div>
+    </div>`;
+}
+
+function downloadMakbuzPDF() {
+  const kaynakAd = document.getElementById('mkb_kaynak_ad').value || 'Apartman Yönetimi';
+  const kaynakAdres = document.getElementById('mkb_kaynak_adres').value || '';
+  const aliciAd = document.getElementById('mkb_alici_ad').value || '—';
+  const aliciAdres = document.getElementById('mkb_alici_adres').value || '';
+  const mkbNo = document.getElementById('mkb_no').value || '—';
+  const mkbTarih = document.getElementById('mkb_tarih').value || '';
+  const donem = document.getElementById('mkb_donem').value || '—';
+  const odemeY = document.getElementById('mkb_odeme_yontemi').value || 'Nakit';
+  const not = document.getElementById('mkb_not').value || '';
+  const kalemler = getKalemler();
+  const genel = kalemler.reduce((s, k) => s + (k.miktar * k.tutar), 0);
+
+  if (!aliciAd || aliciAd === '—') { showToast('Alıcı bilgisi girin!','error'); return; }
+  if (!kalemler.length) { showToast('En az bir kalem ekleyin!','error'); return; }
+
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({ format: 'a5' }); // A5 for receipt feel
+  const W = 148, H = 210;
+
+  // BG
+  doc.setFillColor(250,251,255); doc.rect(0,0,W,H,'F');
+
+  // Header bar
+  doc.setFillColor(59,91,219); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+  doc.text('MAKBUZ', W-14, 12, {align:'right'});
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('No: ' + mkbNo, W-14, 20, {align:'right'});
+
+  // Brand left in header
+  doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text(kaynakAd.substring(0,22), 12, 12);
+  if (kaynakAdres) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+    doc.text(kaynakAdres.substring(0,30), 12, 20);
+  }
+
+  // Meta row
+  let y = 36;
+  doc.setFillColor(240,244,255); doc.roundedRect(10,y,W-20,18,3,3,'F');
+  doc.setTextColor(124,130,163); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+  doc.text('TARİH', 14, y+6); doc.text('DÖNEM', 50, y+6);
+  doc.text('ÖDEME', 88, y+6); doc.text('TOPLAM', 118, y+6);
+  doc.setTextColor(26,29,46); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text(mkbTarih ? formatDate(mkbTarih) : '—', 14, y+14);
+  doc.text(donem.substring(0,14), 50, y+14);
+  doc.text(odemeY, 88, y+14);
+  doc.setTextColor(59,91,219);
+  doc.text(fmt(genel)+' TL', 118, y+14);
+  y += 24;
+
+  // Alici
+  doc.setFillColor(238,242,255); doc.rect(10,y,3,16,'F');
+  doc.setFillColor(245,247,255); doc.rect(13,y,W-23,16,'F');
+  doc.setTextColor(124,130,163); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+  doc.text('ALICI', 16, y+5.5);
+  doc.setTextColor(26,29,46); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+  doc.text(aliciAd.substring(0,32), 16, y+12.5);
+  if (aliciAdres) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(100,100,120);
+    // We'll add addr after the box
+  }
+  y += 20;
+
+  // Table header
+  doc.setFillColor(26,29,46); doc.rect(10,y,W-20,8,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+  doc.text('KALEM', 13, y+5.5);
+  doc.text('MKT', 90, y+5.5);
+  doc.text('BRM FYT', 104, y+5.5);
+  doc.text('TOPLAM', 126, y+5.5);
+  y += 10;
+
+  // Rows
+  kalemler.forEach((k, i) => {
+    if (i%2===0) { doc.setFillColor(248,249,255); doc.rect(10,y-4,W-20,8,'F'); }
+    doc.setTextColor(26,29,46); doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text(k.aciklama.substring(0,22), 13, y);
+    doc.text(String(k.miktar), 93, y, {align:'right'});
+    doc.text(fmt(k.tutar), 120, y, {align:'right'});
+    doc.setFont('helvetica','bold');
+    doc.text(fmt(k.miktar*k.tutar)+' TL', 137, y, {align:'right'});
+    doc.setDrawColor(224,229,240); doc.setLineWidth(0.2);
+    doc.line(10, y+3, W-10, y+3);
+    y += 9;
+  });
+
+  // Total row
+  doc.setFillColor(238,242,255); doc.rect(10,y,W-20,11,'F');
+  doc.setDrawColor(59,91,219); doc.setLineWidth(0.8); doc.rect(10,y,W-20,11,'S');
+  doc.setTextColor(59,91,219); doc.setFontSize(9); doc.setFont('helvetica','bold');
+  doc.text('GENEL TOPLAM', 70, y+7.5, {align:'right'});
+  doc.text(fmt(genel)+' TL', 137, y+7.5, {align:'right'});
+  y += 18;
+
+  // Note
+  if (not) {
+    doc.setFillColor(255,251,235); doc.roundedRect(10,y,W-20,14,2,2,'F');
+    doc.setDrawColor(253,230,138); doc.roundedRect(10,y,W-20,14,2,2,'S');
+    doc.setTextColor(120,80,14); doc.setFontSize(6.5); doc.setFont('helvetica','bold');
+    doc.text('NOT:', 13, y+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,53,15);
+    const notLines = doc.splitTextToSize(not, W-30);
+    doc.text(notLines[0]||'', 13, y+11);
+    y += 18;
+  }
+
+  // Footer
+  y = Math.max(y, H-30);
+  doc.setDrawColor(200,210,235); doc.setLineWidth(0.4);
+  doc.line(10,y,W-10,y);
+  doc.setTextColor(160,165,190); doc.setFontSize(6.5); doc.setFont('helvetica','normal');
+  doc.text('ApartmanYönet ile olusturuldu', 10, y+6);
+
+  // Imza
+  doc.setDrawColor(26,29,46); doc.setLineWidth(0.6);
+  doc.line(W-50, y+5, W-10, y+5);
+  doc.setTextColor(100,100,120); doc.setFontSize(6.5);
+  doc.text('Yönetici İmzası', W-30, y+10, {align:'center'});
+
+  doc.save(`Makbuz_${aliciAd.split(' ')[0]}_${mkbNo}.pdf`);
+  showToast('Makbuz PDF indirildi!','success');
+}
+
+// ─── APARTMAN ─────────────────────────────────────
+function addApt() {
+  const name = document.getElementById('apt_name').value.trim();
+  const pass = document.getElementById('apt_pass').value.trim();
+  const note = document.getElementById('apt_note').value.trim();
+  if (!name||!pass) { showToast('İsim ve şifre zorunlu!','error'); return; }
+  data.apartments.push({ id: Date.now().toString(), name, pass, note });
+  save();
+  document.getElementById('apt_name').value = '';
+  document.getElementById('apt_pass').value = '';
+  document.getElementById('apt_note').value = '';
+  renderAptGrid(); showToast('Apartman eklendi!','success');
+}
+function renderAptGrid() {
+  if (!data.apartments.length) {
+    document.getElementById('aptGrid').innerHTML = `<div class="empty-state"><span class="empty-icon">🏗️</span><p>Henüz apartman eklenmedi</p></div>`;
+    return;
+  }
+  document.getElementById('aptGrid').innerHTML = data.apartments.map(a => `
+    <div class="apt-card">
+      <div class="apt-card-name">🏢 ${a.name}</div>
+      <div class="apt-card-sub">${a.note||'Not eklenmedi'}</div>
+      <div class="apt-card-badge">🔑 ${a.pass}</div>
+      <div class="apt-card-badge" style="margin-left:.3rem">📁 ${data.giderler.filter(g=>g.aptId===a.id).length} gider</div>
+      <div class="apt-card-actions">
+        <button class="btn-edit-apt" onclick="openEditApt('${a.id}')">✏️ Düzenle</button>
+        <button class="btn-del-apt" onclick="deleteApt('${a.id}')">🗑 Sil</button>
+      </div>
+    </div>`).join('');
+}
+function deleteApt(id) {
+  if (!confirm('Bu apartmanı ve tüm giderlerini silmek istediğinize emin misiniz?')) return;
+  data.apartments = data.apartments.filter(a => a.id !== id);
+  data.giderler = data.giderler.filter(g => g.aptId !== id);
+  save(); renderAptGrid(); showToast('Apartman silindi.');
+}
+function openEditApt(id) {
+  const a = data.apartments.find(a => a.id===id);
+  if (!a) return;
+  document.getElementById('edit_apt_id').value = a.id;
+  document.getElementById('edit_apt_name').value = a.name;
+  document.getElementById('edit_apt_pass').value = a.pass;
+  document.getElementById('edit_apt_note').value = a.note||'';
+  document.getElementById('editAptModal').classList.add('open');
+}
+function saveEditApt() {
+  const id = document.getElementById('edit_apt_id').value;
+  const a = data.apartments.find(a => a.id===id);
+  if (!a) return;
+  a.name = document.getElementById('edit_apt_name').value.trim();
+  a.pass = document.getElementById('edit_apt_pass').value.trim();
+  a.note = document.getElementById('edit_apt_note').value.trim();
+  save(); closeModal('editAptModal'); renderAptGrid(); showToast('Apartman güncellendi!','success');
+}
+
+// ─── HELPERS ──────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function fmt(n) { return (n||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function formatDate(d) {
+  if (!d) return '—';
+  const [y,m,day] = d.split('-');
+  const months = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+}
+function formatMonth(m) {
+  if (!m) return '—';
+  const [y,mo] = m.split('-');
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  return `${months[parseInt(mo)-1]} ${y}`;
+}
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type?' '+type:'') + ' show';
+  setTimeout(() => { t.className = 'toast' + (type?' '+type:''); }, 3000);
+}
+
+// Modal close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target===overlay) overlay.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
